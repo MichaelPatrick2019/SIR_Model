@@ -18,7 +18,7 @@ class SIR_Model:
         I0 = the total population.
         """
         #Declare time increment for approximations
-        self.delta_t = 0.01
+        self.delta_t = 0.001
         #Declare max length of x-axis for graph
         self.max_value_length = 100
 
@@ -39,6 +39,7 @@ class SIR_Model:
         self.print_init_data()
         print()
         self.calculate_pandemic_end()
+        print()
 
         #Euler's algorithm implementation
         self.susceptible = [self.S0]
@@ -52,17 +53,6 @@ class SIR_Model:
         self.return_estimated_end_values()
         self.peak_num_infected()
 
-        """
-        print("Susceptible list: ")
-        print(self.susceptible)
-
-        print("Infected list: ")
-        print(self.infected)
-
-        print("Recovered list: ")
-        print(self.recovered)
-        """
-
         #Print Graph
         self.run_graph()
 
@@ -72,12 +62,12 @@ class SIR_Model:
         infection ratio R0.
         :return:
         """
-        print("Initial population size: ", self.N)
+        print(f"Initial population size: {self.N:20.0f}")
         print()
-        print("Initial susceptible population: ", self.S0)
-        print("Initial number of infected: ", self.I0)
-        print("Initial number of recovered: ", self.Rec0)
-        print("R0: ", self.R0)
+        print(f"Initial susceptible population: {self.S0:13.0f}")
+        print(f"Initial number of infected: {self.I0:13.0f}")
+        print(f"Initial number of recovered: {self.Rec0:12.0f}")
+        print(f"R0: {self.R0:41.3f}")
 
 
     def get_S_infinity(self):
@@ -109,10 +99,10 @@ class SIR_Model:
         s_infinite = self.N * self.get_S_infinity()
         r_infinite = self.N * (1 - self.get_S_infinity())
 
-        print("Calculated number of susceptible individuals "
-              "at end of pandemic: ", s_infinite)
-        print("Calculated number of recovered individuals "
-              "at end of pandemic: ", r_infinite)
+        print(f"Calculated susceptible individuals: "
+              f"{s_infinite:12.3f}")
+        print(f"Calculated recovered individuals: "
+              f"{r_infinite:15.3f}")
 
         return r_infinite
 
@@ -223,9 +213,12 @@ class SIR_Model:
         :return:
         """
 
-        plt.plot(self.x_axis, self.susceptible, 'r--',
-                 self.x_axis, self.infected, 'b--',
-                 self.x_axis, self.recovered, 'g--')
+        plt.plot(self.x_axis, self.susceptible, 'r--', label="Susceptible")
+        plt.plot(self.x_axis, self.infected, 'b--', label = "Infected")
+        plt.plot(self.x_axis, self.recovered, 'g--', label = "Recovered")
+        plt.legend(loc="best")
+        plt.xlabel('Time (arbitrary)')
+        plt.ylabel('Population')
 
     def return_estimated_end_values(self):
         """
@@ -239,10 +232,10 @@ class SIR_Model:
         :return:
         """
 
-        print("Estimated number of susceptible individuals "
-              "at end of pandemic: ", self.susceptible[-1])
-        print("Estimated number of recovered individuals "
-              "at end of pandemic: ", self.recovered[-1])
+        print(f"Estimated susceptible individuals: "
+              f"{self.susceptible[-1]:13.3f}")
+        print(f"Estimated recovered individuals: "
+              f"{self.recovered[-1]:16.3f}")
 
     def peak_num_infected(self):
         """
@@ -260,7 +253,7 @@ class SIR_Model:
             if self.infected[x] > max_val:
                 max_val = self.infected[x]
 
-        print ("Highest number of infected: ", max_val)
+        print (f"Highest number of infected: {max_val:21.3f}")
 
 
 
