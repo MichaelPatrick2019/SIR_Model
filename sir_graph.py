@@ -17,7 +17,9 @@ class SIR_Model:
         I0 = the total population.
         """
         #Declare time increment for approximations
-        self.delta_t = 0.1
+        self.delta_t = 0.01
+        #Declare max length of x-axis for graph
+        self.max_value_length = 100
 
         #Set constants
         self.beta = float(beta)
@@ -46,6 +48,9 @@ class SIR_Model:
         self.euler_approx()
 
         #Print out results
+        self.return_estimated_end_values()
+        self.peak_num_infected()
+
         """
         print("Susceptible list: ")
         print(self.susceptible)
@@ -90,17 +95,25 @@ class SIR_Model:
         """
         Calculates the limit of susceptible and recovered individuals
         as time reaches infinity.
-        In other words, the number of susceptible and recovered individuals
-        as the pandemic ends.
+        In other words, the number of susceptible and recovered
+        individuals as the pandemic ends.
+
+        This is calculated using the Lambert W function to solve
+        for the s->infinity limit of S(t).
+
+        Postcondition: Returns the calculated end value of
+        recovered individuals as a float.
         :return:
         """
         s_infinite = self.N * self.get_S_infinity()
         r_infinite = self.N * (1 - self.get_S_infinity())
 
-        print("Remaining number of susceptible individuals "
+        print("Calculated number of susceptible individuals "
               "at end of pandemic: ", s_infinite)
-        print("Remaining number of recovered individuals "
+        print("Calculated number of recovered individuals "
               "at end of pandemic: ", r_infinite)
+
+        return r_infinite
 
     def euler_approx(self):
         """
@@ -119,7 +132,8 @@ class SIR_Model:
         In = self.infected[-1]
         Rn = self.recovered[-1]
 
-        for x in range(5):
+        for x in range((int) (self.max_value_length /
+                              self.delta_t)):
             Sn = self.susceptible[-1]
             In = self.infected[-1]
             Rn = self.recovered[-1]
@@ -127,12 +141,17 @@ class SIR_Model:
 
             ds_dt = self.S_prime(Sn, In)
             dr_dt = self.R_prime(Rn, In)
-            di_dt = self.I_prime(Sn, In)
+            di_dt = self.I_prime(In, Sn)
 
             self.susceptible.append(Sn + ds_dt)
             self.recovered.append(Rn + dr_dt)
             self.infected.append(In + di_dt)
             self.x_axis.append(last_x + self.delta_t)
+
+            #Pandemic ends when number of infected is equal
+            #to zero!
+            if ((int) (self.infected[-1]) ==
+                0): break
 
 
     def S_prime(self, s_prev, i_prev):
@@ -171,8 +190,13 @@ class SIR_Model:
 
     def I_prime(self, i_prev, s_prev):
         """
-        Calculates the number of infected individuals based on
-        the derivative equation.
+        Calculates the next value of infected individuals
+        based on the SIR model differential equation:
+        dI/dt = (beta * S(t) * I(t) / N) - gamma * I(t)
+
+        NOTE: Returns result of derivative equation multiplied
+        by the time increment! Must be added to the previous value
+        to get the actual number of infected individuals.
 
         :param s_now: The number of susceptible individuals in this
         time increment.
@@ -188,18 +212,59 @@ class SIR_Model:
         return self.delta_t * di_dt
 
     def run_graph(self):
+        """
+        Plots the derived values of susceptible, infected,
+        and recovered individals using matplotlib.
+
+        Susceptible = Red
+        Infected = Blue
+        Recovered = Green
+        :return:
+        """
+
         plt.plot(self.x_axis, self.susceptible, 'r--',
                  self.x_axis, self.infected, 'b--',
                  self.x_axis, self.recovered, 'g--')
 
+    def return_estimated_end_values(self):
+        """
+        Prints the last values of the list data members of the
+        object, which were derived using Euler's algorithm to
+        approximate a differential equation.
+
+        Precondition: This MUST be called AFTER self.euler_approx()
+        is called. Otherwise it will simply return the starting
+        values of the pandemic.
+        :return:
+        """
+
+        print("Estimated number of susceptible individuals "
+              "at end of pandemic: ", self.susceptible[-1])
+        print("Estimated number of recovered individuals "
+              "at end of pandemic: ", self.recovered[-1])
+
+    def peak_num_infected(self):
+        """
+        Finds the highest number of infected throughout the
+        entire pandemic.
+
+        Precondition: Must call self.euler_approx() first, otherwise
+        this will return the starting number of infected.
+        Postcondition: Prints a string.
+        :return:
+        """
+
+        max_val = self.infected[0]
+        for x in range(len(self.infected)):
+            if self.infected[x] > max_val:
+                max_val = self.infected[x]
+
+        print ("Highest number of infected: ", max_val)
+
+
 
 if __name__ == '__main__':
-    model = SIR_Model(7, 5, 2, 500)
+    model = SIR_Model(6, 5, 500, 5000)
 
     s_1 = 500 + model.S_prime(500, 1)
     r_1 = 0 + model.R_prime(0, 1)
-
-    print("Calculated S(1) to get: ", s_1)
-    print("Calculated R(1) to get: ", r_1)
-    print("Calculated I(1) to get: ",
-          model.I_prime(s_1, r_1))
