@@ -8,6 +8,7 @@ from scipy.special import lambertw
 import matplotlib.pyplot as plt
 import numpy as np
 from math import e
+import sys
 
 class SIR_Model:
 
@@ -264,7 +265,17 @@ class SIR_Model:
 
 
 if __name__ == '__main__':
-    model = SIR_Model(6, 5, 500, 5000)
+    if (len(sys.argv) != 5):
+        print("Correct usage...\n\n"
+              "sir_graph.py [infective rate]"
+              "[recovery rate] [initial num infected] "
+              "[initial susceptible population]")
+        sys.exit(-1)
 
-    s_1 = 500 + model.S_prime(500, 1)
-    r_1 = 0 + model.R_prime(0, 1)
+    beta = (float) (sys.argv[1])
+    gamma = (float) (sys.argv[2])
+    init_infect = (float) (sys.argv[3])
+    init_suscept = (float) (sys.argv[4])
+
+    model = SIR_Model(beta, gamma,
+                      init_infect, init_suscept)
